@@ -1,0 +1,216 @@
+
+import React, { useState } from "react";
+import { Appointment, AppointmentStatus } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/context/AuthContext";
+import { getPatientNameById } from "@/data/mockData";
+
+interface AppointmentActionsProps {
+  appointment: Appointment;
+  onUpdate?: (updatedAppointment: Appointment) => void;
+}
+
+const AppointmentActions: React.FC<AppointmentActionsProps> = ({ 
+  appointment, 
+  onUpdate 
+}) => {
+  const [notes, setNotes] = useState(appointment.notes || "");
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const [isGenerateBillDialogOpen, setIsGenerateBillDialogOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const canUpdateStatus = user?.role === "doctor";
+  const canGenerateBill = user?.role === "staff" && appointment.status === "completed";
+
+  const handleStatusUpdate = async (newStatus: AppointmentStatus) => {
+    setIsUpdating(true);
+    try {
+      // In a real app, this would be an API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const updatedAppointment: Appointment = {
+        ...appointment,
+        status: newStatus,
+        notes: notes.trim() ? notes : appointment.notes,
+      };
+      
+      if (onUpdate) {
+        onUpdate(updatedAppointment);
+      }
+      
+      toast({
+        title: "Appointment Updated",
+        description: `Appointment status changed to ${newStatus}`,
+      });
+      
+      setIsUpdateDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update appointment status",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleGenerateBill = async () => {
+    setIsUpdating(true);
+    try {
+      // In a real app, this would be an API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast({
+        title: "Bill Generated",
+        description: `Bill generated for ${getPatientNameById(appointment.patientId)}`,
+      });
+      
+      setIsGenerateBillDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate bill",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  if (!canUpdateStatus && !canGenerateBill) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2 mt-4">
+      {canUpdateStatus && (
+        <>
+          <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="bg-clinic-50 text-clinic-800 hover:bg-clinic-100">
+                Update Status
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Update Appointment Status</DialogTitle>
+                <DialogDescription>
+                  Change the status of the appointment and add any notes if needed.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="grid grid-cols-2 gap-2">
+                  {appointment.status !== "completed" && (
+                    <Button 
+                      variant="outline" 
+                      className="bg-green-50 text-green-700 hover:bg-green-100"
+                      onClick={() => handleStatusUpdate("completed")}
+                      disabled={isUpdating}
+                    >
+                      Mark as Completed
+                    </Button>
+                  )}
+                  {appointment.status !== "missed" && (
+                    <Button 
+                      variant="outline" 
+                      className="bg-gray-50 text-gray-700 hover:bg-gray-100"
+                      onClick={() => handleStatusUpdate("missed")}
+                      disabled={isUpdating}
+                    >
+                      Mark as Missed
+                    </Button>
+                  )}
+                  {appointment.status !== "cancelled" && (
+                    <Button 
+                      variant="outline" 
+                      className="bg-red-50 text-red-700 hover:bg-red-100"
+                      onClick={() => handleStatusUpdate("cancelled")}
+                      disabled={isUpdating}
+                    >
+                      Cancel Appointment
+                    </Button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="notes" className="text-sm font-medium">
+                    Notes
+                  </label>
+                  <Textarea
+                    id="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Add any notes about this appointment"
+                    rows={3}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsUpdateDialogOpen(false)}
+                  disabled={isUpdating}
+                >
+                  Cancel
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
+      
+      {canGenerateBill && (
+        <Dialog open={isGenerateBillDialogOpen} onOpenChange={setIsGenerateBillDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
+              Generate Bill
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Generate Bill</DialogTitle>
+              <DialogDescription>
+                Create a bill for this completed appointment.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-sm text-gray-700 mb-2">
+                <span className="font-medium">Patient:</span> {getPatientNameById(appointment.patientId)}
+              </p>
+              <p className="text-sm text-gray-700 mb-4">
+                <span className="font-medium">Appointment Date:</span> {appointment.date}
+              </p>
+              <p className="text-sm">
+                This will generate a new bill for the services provided during this appointment.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsGenerateBillDialogOpen(false)}
+                disabled={isUpdating}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleGenerateBill}
+                className="bg-clinic-500 hover:bg-clinic-600"
+                disabled={isUpdating}
+              >
+                {isUpdating ? "Processing..." : "Generate Bill"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+};
+
+export default AppointmentActions;
