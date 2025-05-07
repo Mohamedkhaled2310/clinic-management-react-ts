@@ -45,8 +45,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(savedUser);
     } catch (err) {
 
-      setError(err.response?.data?.message || 'Failed to login');
-      throw new Error(err.response?.data?.message || 'Failed to login');
+      setError(err.response?.data?.error || 'Failed to login');
+      throw new Error(err.response?.data?.error || 'Failed to login');
     } finally {
       setIsLoading(false);
     }
@@ -74,10 +74,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password, 
         name 
       });
-      setUser(response.data.name);
+      const {id,...savedUser} = response.data.user;
+      setUser(savedUser);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to register');
-      throw new Error(err.response?.data?.message || 'Failed to register');
+      setError(err.response?.data?.error || 'Failed to register');
+      throw new Error(err.response?.data?.error || 'Failed to register');
     } finally {
       setIsLoading(false);
     }

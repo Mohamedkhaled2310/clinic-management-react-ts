@@ -1,7 +1,6 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { mockDoctors } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,24 +8,40 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import api from "@/services/api";
 
 interface AppointmentFormProps {
   onAppointmentCreated?: () => void;
 }
 
 const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentCreated }) => {
+  const [doctors, setDoctors] = useState([]);
   const [doctorId, setDoctorId] = useState("");
   const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  // const [time, setTime] = useState("");
   const [reason, setReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { user } = useAuth();
   const { toast } = useToast();
 
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const response = await api.get("user/doctors");
+        setDoctors(response.data);
+        console.log("Doctors:", response.data);
+      } catch (error) {
+        console.error("Error fetching doctors:", error);
+      }
+    };
+  
+    fetchDoctors();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+  
     if (!user) {
       toast({
         title: "Error",
@@ -35,26 +50,31 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentCreated 
       });
       return;
     }
-    
+  
     setIsSubmitting(true);
     try {
-      // In a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await api.post("/api/appointments", {
+          doctorId,
+          date,
+          // time,
+          reason,
+        });
       
       toast({
         title: "Appointment Requested",
-        description: "Your appointment request has been submitted successfully",
+        description: `Your appointment with Dr. ${response.data.doctorName || "..." } has been scheduled`,
       });
-      
+  
       // Reset form
       setDoctorId("");
       setDate("");
-      setTime("");
+      // setTime("");
       setReason("");
-      
+  
       if (onAppointmentCreated) {
         onAppointmentCreated();
       }
+  
     } catch (error) {
       toast({
         title: "Error",
@@ -65,6 +85,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentCreated 
       setIsSubmitting(false);
     }
   };
+  
 
   // Disable past dates
   const today = new Date();
@@ -88,9 +109,9 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentCreated 
                 <SelectValue placeholder="Select a doctor" />
               </SelectTrigger>
               <SelectContent>
-                {mockDoctors.map((doctor) => (
+                {doctors.map((doctor) => (
                   <SelectItem key={doctor.id} value={doctor.id}>
-                    {doctor.name} - {doctor.specialization}
+                    {doctor.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -109,7 +130,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentCreated 
             />
           </div>
           
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="time">Time</Label>
             <Input
               id="time"
@@ -118,7 +139,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentCreated 
               onChange={(e) => setTime(e.target.value)}
               required
             />
-          </div>
+          </div> */}
           
           <div className="space-y-2">
             <Label htmlFor="reason">Reason for Visit</Label>
