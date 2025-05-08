@@ -1,21 +1,43 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Appointment } from "@/types";
 import { getPatientNameById, getDoctorNameById } from "@/data/mockData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import api from "@/services/api";
 
 interface AppointmentListProps {
-  appointments: Appointment[];
   onSelectAppointment?: (appointment: Appointment) => void;
 }
 
 const AppointmentList: React.FC<AppointmentListProps> = ({
-  appointments,
   onSelectAppointment,
 }) => {
   const { user } = useAuth();
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      if (!user?.id) return;
+      try {
+        const endpoint =
+          user.role === "patient"
+            ? `/appointments/patient/${user.id}`
+            : `/appointments/doctor/${user.id}`;
+
+        const { data } = await api.get(endpoint);
+        setAppointments(data);
+      } catch (err) {
+        console.error("Error fetching appointments:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAppointments();
+  }, [user]);
 
   const getStatusBadge = (status: Appointment["status"]) => {
     switch (status) {

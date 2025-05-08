@@ -29,7 +29,6 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentCreated 
     const fetchDoctors = async () => {
       try {
         const response = await api.get("user/doctors");
-        setDoctors(response.data);
         console.log("Doctors:", response.data);
       } catch (error) {
         console.error("Error fetching doctors:", error);
@@ -53,7 +52,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentCreated 
   
     setIsSubmitting(true);
     try {
-      const response = await api.post("/api/appointments", {
+      const response = await api.post("/appointments", {
           doctorId,
           date,
           // time,
@@ -62,7 +61,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentCreated 
       
       toast({
         title: "Appointment Requested",
-        description: `Your appointment with Dr. ${response.data.doctorName || "..." } has been scheduled`,
+        description: `Your appointment has been scheduled`,
       });
   
       // Reset form
@@ -111,7 +110,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentCreated 
               <SelectContent>
                 {doctors.map((doctor) => (
                   <SelectItem key={doctor.id} value={doctor.id}>
-                    {doctor.name}
+                    DR . {doctor.name}
                   </SelectItem>
                 ))}
               </SelectContent>
