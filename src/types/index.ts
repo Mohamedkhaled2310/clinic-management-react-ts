@@ -45,7 +45,6 @@ export interface Appointment {
   date: string; // ISO date string
   reason: string;
   status: AppointmentStatus;
-  notes?: string;
 }
 
 export interface Bill {

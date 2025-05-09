@@ -11,33 +11,34 @@ interface AppointmentListProps {
 }
 
 const AppointmentList: React.FC<AppointmentListProps> = ({
-  onSelectAppointment,
+  appointments,
+  onSelectAppointment
 }) => {
   const { user } = useAuth();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  // const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      if (!user) return;
-      try {
-        const endpoint =
-          user.role === "patient"
-            ? `/appointments/patient`
-            : `/appointments/doctor`;
+  // useEffect(() => {
+  //   const fetchAppointments = async () => {
+  //     if (!user) return;
+  //     try {
+  //       const endpoint =
+  //         user.role === "patient"
+  //           ? `/appointments/patient`
+  //           : `/appointments/doctor`;
 
-        const { data } = await api.get(endpoint);
-        setAppointments(data);
-        console.log("Appointments:", data);
-      } catch (err) {
-        console.error("Error fetching appointments:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       const { data } = await api.get(endpoint);
+  //       setAppointments(data);
+  //       console.log("Appointments:", data);
+  //     } catch (err) {
+  //       console.error("Error fetching appointments:", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchAppointments();
-  }, [user]);
+  //   fetchAppointments();
+  // }, [user]);
 
   const getStatusBadge = (status: Appointment["status"]) => {
     switch (status) {
@@ -66,14 +67,14 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const formatTime = (timeString: string) => {
-    const [hours, minutes] = timeString.split(':');
-    const date = new Date();
-    date.setHours(parseInt(hours, 10));
-    date.setMinutes(parseInt(minutes, 10));
+  // const formatTime = (timeString: string) => {
+  //   const [hours, minutes] = timeString.split(':');
+  //   const date = new Date();
+  //   date.setHours(parseInt(hours, 10));
+  //   date.setMinutes(parseInt(minutes, 10));
     
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  //   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // };
 
   return (
     <div className="space-y-4">
@@ -98,17 +99,9 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
                       ? `${appointment.doctorName}`
                       : `${appointment.patientName}`}
                   </div>
-                  {/* <div className="text-sm text-gray-600 mb-2">
-                    {formatDate(appointment.date)} at {formatTime(appointment.time)}
-                  </div> */}
                   <div className="text-sm text-gray-800 mt-2">
                     <span className="font-medium">Reason:</span> {appointment.reason}
                   </div>
-                  {appointment.notes && (
-                    <div className="text-sm text-gray-700 mt-1">
-                      <span className="font-medium">Notes:</span> {appointment.notes}
-                    </div>
-                  )}
                 </div>
                 <div className="flex flex-col items-end">
                   {getStatusBadge(appointment.status)}

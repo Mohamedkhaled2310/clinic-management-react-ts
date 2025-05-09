@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -7,9 +6,8 @@ import AppointmentList from "@/components/appointments/AppointmentList";
 import AppointmentActions from "@/components/appointments/AppointmentActions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { mockAppointments } from "@/data/mockData";
 import { Appointment, AppointmentStatus } from "@/types";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import api from "@/services/api";
 
 const AppointmentsPage: React.FC = () => {
   const { user } = useAuth();
@@ -17,136 +15,104 @@ const AppointmentsPage: React.FC = () => {
   const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [activeFilter, setActiveFilter] = useState<AppointmentStatus | "all">("all");
-  
+
   useEffect(() => {
     if (!user) return;
-    
-    // Filter appointments based on user role
-    let userAppointments: Appointment[];
-    
-    if (user.role === "patient") {
-      userAppointments = mockAppointments.filter(appointment => appointment.patientId === user.id);
-    } else if (user.role === "doctor") {
-      userAppointments = mockAppointments.filter(appointment => appointment.doctorId === user.id);
-    } else {
-      // Staff can see all appointments
-      userAppointments = [...mockAppointments];
-    }
-    
-    setAppointments(userAppointments);
-    setFilteredAppointments(userAppointments);
-  }, [user]);
 
-  // Redirect if not logged in
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
+    const fetchAppointments = async () => {
+      try {
+        let appointmentRes;
+        if (user.role === "patient") {
+          appointmentRes = await api.get(`/appointments/patient`);
+        } else if (user.role === "doctor") {
+          appointmentRes = await api.get(`/appointments/doctor`);
+        } else {
+          appointmentRes = await api.get(`/appointments`);
+        }
+        setAppointments(appointmentRes.data);
+        setFilteredAppointments(appointmentRes.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchAppointments();
+  }, [user]);
 
   const handleFilterChange = (status: AppointmentStatus | "all") => {
     setActiveFilter(status);
-    
     if (status === "all") {
       setFilteredAppointments(appointments);
     } else {
-      setFilteredAppointments(appointments.filter(appointment => appointment.status === status));
+      setFilteredAppointments(appointments.filter(a => a.status === status));
     }
   };
 
   const handleAppointmentUpdate = (updatedAppointment: Appointment) => {
-    // In a real app, this would update the state after an API call
-    const updatedAppointments = appointments.map(appointment => 
-      appointment.id === updatedAppointment.id ? updatedAppointment : appointment
+    const updatedAppointments = appointments.map(a =>
+      a.id === updatedAppointment.id ? updatedAppointment : a
     );
-    
     setAppointments(updatedAppointments);
-    
-    // Apply current filter to updated appointments
+  
     if (activeFilter === "all") {
       setFilteredAppointments(updatedAppointments);
     } else {
-      setFilteredAppointments(updatedAppointments.filter(appointment => appointment.status === activeFilter));
+      setFilteredAppointments(updatedAppointments.filter(a => a.status === activeFilter));
     }
-    
+  
     setSelectedAppointment(updatedAppointment);
   };
+  
 
-  const getPageTitle = () => {
-    switch (user.role) {
-      case "patient":
-        return "My Appointments";
-      case "doctor":
-        return "My Schedule";
-      case "staff":
-        return "All Appointments";
-      default:
-        return "Appointments";
-    }
-  };
+  if (!user) return <Navigate to="/auth" replace />;
+
+  const statusFilters: (AppointmentStatus | "all")[] = ["all", "pending", "confirmed", "completed", "cancelled", "missed"];
 
   return (
     <Layout>
       <div className="clinic-container">
-        <h1 className="page-title">{getPageTitle()}</h1>
-        
+        <h1 className="page-title">
+          {user.role === "patient"
+            ? "My Appointments"
+            : user.role === "doctor"
+            ? "My Schedule"
+            : "All Appointments"}
+        </h1>
+
         <div className="mb-6">
           <div className="flex flex-wrap gap-2">
-            <Button 
-              variant={activeFilter === "all" ? "default" : "outline"}
-              onClick={() => handleFilterChange("all")}
-              className={activeFilter === "all" ? "bg-clinic-500 hover:bg-clinic-600" : ""}
-            >
-              All
-            </Button>
-            <Button 
-              variant={activeFilter === "pending" ? "default" : "outline"}
-              onClick={() => handleFilterChange("pending")}
-              className={activeFilter === "pending" ? "bg-yellow-500 hover:bg-yellow-600" : ""}
-            >
-              Pending
-            </Button>
-            <Button 
-              variant={activeFilter === "confirmed" ? "default" : "outline"}
-              onClick={() => handleFilterChange("confirmed")}
-              className={activeFilter === "confirmed" ? "bg-blue-500 hover:bg-blue-600" : ""}
-            >
-              Confirmed
-            </Button>
-            <Button 
-              variant={activeFilter === "completed" ? "default" : "outline"}
-              onClick={() => handleFilterChange("completed")}
-              className={activeFilter === "completed" ? "bg-green-500 hover:bg-green-600" : ""}
-            >
-              Completed
-            </Button>
-            <Button 
-              variant={activeFilter === "cancelled" ? "default" : "outline"}
-              onClick={() => handleFilterChange("cancelled")}
-              className={activeFilter === "cancelled" ? "bg-red-500 hover:bg-red-600" : ""}
-            >
-              Cancelled
-            </Button>
-            <Button 
-              variant={activeFilter === "missed" ? "default" : "outline"}
-              onClick={() => handleFilterChange("missed")}
-              className={activeFilter === "missed" ? "bg-gray-500 hover:bg-gray-600" : ""}
-            >
-              Missed
-            </Button>
+            {statusFilters.map(status => (
+              <Button
+                key={status}
+                variant={activeFilter === status ? "default" : "outline"}
+                onClick={() => handleFilterChange(status)}
+                className={
+                  status === "pending" ? "bg-yellow-500 hover:bg-yellow-600" :
+                  status === "confirmed" ? "bg-blue-500 hover:bg-blue-600" :
+                  status === "completed" ? "bg-green-500 hover:bg-green-600" :
+                  status === "cancelled" ? "bg-red-500 hover:bg-red-600" :
+                  status === "missed" ? "bg-gray-500 hover:bg-gray-600" :
+                  activeFilter === "all" ? "bg-clinic-500 hover:bg-clinic-600" : ""
+                }
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </Button>
+            ))}
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
             <Card>
               <CardContent className="p-6">
-                <AppointmentList 
-                  appointments={filteredAppointments} 
+                <AppointmentList
+                  appointments={filteredAppointments}
                   onSelectAppointment={setSelectedAppointment}
                 />
               </CardContent>
             </Card>
           </div>
-          
+
           <div>
             {selectedAppointment ? (
               <Card>
@@ -155,29 +121,12 @@ const AppointmentsPage: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    <p>
-                      <span className="font-medium">Date:</span> {selectedAppointment.date}
-                    </p>
-                    {/* <p>
-                      <span className="font-medium">Time:</span> {selectedAppointment.time}
-                    </p>
-                    <p>
-                      <span className="font-medium">Duration:</span> {selectedAppointment.duration} minutes
-                    </p> */}
-                    <p>
-                      <span className="font-medium">Reason:</span> {selectedAppointment.reason}
-                    </p>
-                    <p>
-                      <span className="font-medium">Status:</span> {selectedAppointment.status}
-                    </p>
-                    {selectedAppointment.notes && (
-                      <p>
-                        <span className="font-medium">Notes:</span> {selectedAppointment.notes}
-                      </p>
-                    )}
-                    
-                    <AppointmentActions 
-                      appointment={selectedAppointment} 
+                    <p><strong>Date:</strong> {selectedAppointment.date}</p>
+                    <p><strong>Reason:</strong> {selectedAppointment.reason}</p>
+                    <p><strong>Status:</strong> {selectedAppointment.status}</p>
+
+                    <AppointmentActions
+                      appointment={selectedAppointment}
                       onUpdate={handleAppointmentUpdate}
                     />
                   </div>
@@ -185,10 +134,8 @@ const AppointmentsPage: React.FC = () => {
               </Card>
             ) : (
               <Card>
-                <CardContent className="p-6">
-                  <div className="text-center text-gray-500">
-                    Select an appointment to view details
-                  </div>
+                <CardContent className="p-6 text-center text-gray-500">
+                  Select an appointment to view details
                 </CardContent>
               </Card>
             )}
