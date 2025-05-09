@@ -40,9 +40,9 @@ export interface Appointment {
   id: string;
   patientId: string;
   doctorId: string;
+  doctorName: string;
+  patientName: string;
   date: string; // ISO date string
-  time: string; // format: HH:mm
-  duration: number; // in minutes
   reason: string;
   status: AppointmentStatus;
   notes?: string;

@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Appointment } from "@/types";
-import { getPatientNameById, getDoctorNameById } from "@/data/mockData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import api from "@/services/api";
@@ -20,15 +19,16 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
 
   useEffect(() => {
     const fetchAppointments = async () => {
-      if (!user?.id) return;
+      if (!user) return;
       try {
         const endpoint =
           user.role === "patient"
-            ? `/appointments/patient/${user.id}`
-            : `/appointments/doctor/${user.id}`;
+            ? `/appointments/patient`
+            : `/appointments/doctor`;
 
         const { data } = await api.get(endpoint);
         setAppointments(data);
+        console.log("Appointments:", data);
       } catch (err) {
         console.error("Error fetching appointments:", err);
       } finally {
@@ -95,12 +95,12 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
                 <div>
                   <div className="font-medium mb-1">
                     {user?.role === "patient" 
-                      ? `${getDoctorNameById(appointment.doctorId)}`
-                      : `${getPatientNameById(appointment.patientId)}`}
+                      ? `${appointment.doctorName}`
+                      : `${appointment.patientName}`}
                   </div>
-                  <div className="text-sm text-gray-600 mb-2">
+                  {/* <div className="text-sm text-gray-600 mb-2">
                     {formatDate(appointment.date)} at {formatTime(appointment.time)}
-                  </div>
+                  </div> */}
                   <div className="text-sm text-gray-800 mt-2">
                     <span className="font-medium">Reason:</span> {appointment.reason}
                   </div>
@@ -113,7 +113,7 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
                 <div className="flex flex-col items-end">
                   {getStatusBadge(appointment.status)}
                   <div className="text-sm text-gray-600 mt-2">
-                    {appointment.duration} min
+                    {formatDate(appointment.date)}
                   </div>
                 </div>
               </div>

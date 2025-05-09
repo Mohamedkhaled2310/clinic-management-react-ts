@@ -29,7 +29,8 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentCreated 
     const fetchDoctors = async () => {
       try {
         const response = await api.get("user/doctors");
-        console.log("Doctors:", response.data);
+        setDoctors(response.data);
+        // console.log("Doctors:", response.data);
       } catch (error) {
         console.error("Error fetching doctors:", error);
       }

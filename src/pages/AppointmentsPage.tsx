@@ -158,12 +158,12 @@ const AppointmentsPage: React.FC = () => {
                     <p>
                       <span className="font-medium">Date:</span> {selectedAppointment.date}
                     </p>
-                    <p>
+                    {/* <p>
                       <span className="font-medium">Time:</span> {selectedAppointment.time}
                     </p>
                     <p>
                       <span className="font-medium">Duration:</span> {selectedAppointment.duration} minutes
-                    </p>
+                    </p> */}
                     <p>
                       <span className="font-medium">Reason:</span> {selectedAppointment.reason}
                     </p>

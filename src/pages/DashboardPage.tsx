@@ -16,7 +16,17 @@ const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
-  
+
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    };
+
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
   useEffect(() => {
     if (!user) return;
     
@@ -133,14 +143,14 @@ const DashboardPage: React.FC = () => {
                       <CardContent>
                         <div className="space-y-2">
                           <p>
-                            <span className="font-medium">Date:</span> {selectedAppointment.date}
+                            <span className="font-medium">Date:</span> {formatDate(selectedAppointment.date)}
                           </p>
-                          <p>
+                          {/* <p>
                             <span className="font-medium">Time:</span> {selectedAppointment.time}
                           </p>
                           <p>
                             <span className="font-medium">Duration:</span> {selectedAppointment.duration} minutes
-                          </p>
+                          </p> */}
                           <p>
                             <span className="font-medium">Reason:</span> {selectedAppointment.reason}
                           </p>
