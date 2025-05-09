@@ -49,15 +49,17 @@ export interface Appointment {
 
 export interface Bill {
   id: string;
-  appointmentId: string;
-  patientId: string;
+  appointment: string;
+  patient: string;
   amount: number;
-  services: BillService[];
-  status: 'unpaid' | 'paid' | 'partially_paid';
-  dueDate: string; // ISO date string
-  dateIssued: string; // ISO date string
-  datePaid?: string; // ISO date string
+  paid: boolean;
+  appointmentReason:string;
+  appointmentDate: string;
+  patientName: string;
+  paymentMethod: string;
   notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface BillService {

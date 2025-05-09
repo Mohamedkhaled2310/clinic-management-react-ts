@@ -27,10 +27,10 @@ const AppointmentActions: React.FC<AppointmentActionsProps> = ({
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [isGenerateBillDialogOpen, setIsGenerateBillDialogOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-
+  const [amount,setAmount] = useState(0);
   const { user } = useAuth();
   const { toast } = useToast();
-
+  const [notes, setNotes] = useState("");
   const canUpdateStatus = user?.role === "doctor" ;
   const canGenerateBill = user?.role === "staff" && appointment.status === "completed";
 
@@ -65,12 +65,15 @@ const AppointmentActions: React.FC<AppointmentActionsProps> = ({
   const handleGenerateBill = async () => {
     setIsUpdating(true);
     try {
-      // Simulate bill generation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
+      await api.post(`/bills`, {
+        appointment: appointment.id,
+        patient: appointment.patientId,
+        amount,
+        notes
+      });
       toast({
         title: "Bill Generated",
-        description: `Bill generated for ${getPatientNameById(appointment.patientId)}`,
+        description: `Bill generated for ${appointment.patientName}`,
       });
 
       setIsGenerateBillDialogOpen(false);
@@ -166,11 +169,32 @@ const AppointmentActions: React.FC<AppointmentActionsProps> = ({
             </DialogHeader>
             <div className="py-4">
               <p className="text-sm text-gray-700 mb-2">
-                <span className="font-medium">Patient:</span> {getPatientNameById(appointment.patientId)}
+                <span className="font-medium">Patient:</span> {appointment.patientName || "No patient name"}
               </p>
               <p className="text-sm text-gray-700 mb-4">
-                <span className="font-medium">Appointment Date:</span> {appointment.date}
+                <span className="font-medium">Appointment Date:</span> {new Date(appointment.date).toLocaleDateString()}
               </p>
+              <p className="text-sm mb-2">
+                <span className="font-medium">Amount:</span>
+              </p>
+              <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(Number(e.target.value))}
+              min="1"
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              placeholder="Enter amount"
+            />
+              <p className="text-sm mt-4 mb-2">
+                <span className="font-medium">Notes:</span>
+              </p>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                placeholder="Enter notes"
+                rows={4}
+              />
               <p className="text-sm">
                 This will generate a new bill for the services provided during this appointment.
               </p>

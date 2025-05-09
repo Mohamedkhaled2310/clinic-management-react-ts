@@ -27,7 +27,7 @@ const AppointmentsPage: React.FC = () => {
         } else if (user.role === "doctor") {
           appointmentRes = await api.get(`/appointments/doctor`);
         } else {
-          appointmentRes = await api.get(`/appointments`);
+          appointmentRes = await api.get(`/appointments/all`);
         }
         setAppointments(appointmentRes.data);
         setFilteredAppointments(appointmentRes.data);
