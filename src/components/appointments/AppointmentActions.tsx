@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import { getPatientNameById } from "@/data/mockData";
 import api from "@/services/api";
 
 interface AppointmentActionsProps {

@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Bill } from "@/types";
 import api from "@/services/api";
+import { toast } from "sonner";
 
 const BillingPage: React.FC = () => {
   const { user } = useAuth();
@@ -53,21 +54,39 @@ console.log("Filtered Bills:", filteredBills);
       currency: "USD",
     }).format(amount);
 
-  const handlePayBill = () => {
-    if (!selectedBill) return;
+const handlePayBill = async () => {
+  if (!selectedBill) {
+    toast.warning("No bill selected");
+    return;
+  }
 
-    const updatedBill: Bill = {
-      ...selectedBill,
+  try {
+    const updates: Partial<Bill> = {
       paid: true,
-      updatedAt : new Date().toISOString().split("T")[0],
+      updatedAt: new Date().toISOString(),
     };
 
-    setBills(prev =>
-      prev.map(bill => bill.id === updatedBill.id ? updatedBill : bill)
+ 
+    const { data: updatedBill } = await api.patch<Bill>(
+      `bills/${selectedBill.id}`, 
+      updates
     );
-    setSelectedBill(updatedBill);
-  };
 
+    setBills(prev => prev.map(bill => 
+      bill.id === selectedBill.id ? { ...bill, ...updatedBill } : bill
+    ));
+    setSelectedBill(prev => ({ ...prev!, ...updatedBill }));
+
+    toast.success("Bill marked as paid successfully!");
+    
+  } catch (error) {
+    console.error("Failed to update bill:", error);
+    toast.error(
+      error.response?.data?.message || "Failed to update bill status"
+    );
+    
+  }
+};
   const StatusFilterButton = ({
     status,
     label,
