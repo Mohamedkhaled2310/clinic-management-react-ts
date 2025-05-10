@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
+import { UserRole } from "@/types";
 import { useNavigate } from "react-router-dom";
 
 interface RegisterFormProps {
@@ -17,14 +18,13 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleForm }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
-  // const [role, setRole] = useState<UserRole>("patient");
+  const [role, setRole] = useState<UserRole>("patient");
   const { register, isLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (password !== confirmPassword) {
       toast({
         title: "Error",
@@ -56,7 +56,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleForm }) => {
       <CardHeader>
         <CardTitle className="text-2xl text-center">Create an Account</CardTitle>
         <CardDescription className="text-center">
-          Enter your details to create your account
+          Add User
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -104,7 +104,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleForm }) => {
               required
             />
           </div>
-          {/* <div className="space-y-2">
+          <div className="space-y-2">
             <Label>Account Type</Label>
             <RadioGroup value={role} onValueChange={(value) => setRole(value as UserRole)}>
               <div className="flex items-center space-x-2">
@@ -120,7 +120,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleForm }) => {
                 <Label htmlFor="staff">Staff</Label>
               </div>
             </RadioGroup>
-          </div> */}
+          </div>
           <Button 
             type="submit" 
             className="w-full bg-clinic-500 hover:bg-clinic-600" 
@@ -130,18 +130,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleForm }) => {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-gray-600">
-          Already have an account?{" "}
-          <Button 
-            variant="link" 
-            className="p-0 text-clinic-600 hover:text-clinic-700" 
-            onClick={onToggleForm}
-          >
-            Sign in
-          </Button>
-        </p>
-      </CardFooter>
     </Card>
   );
 };

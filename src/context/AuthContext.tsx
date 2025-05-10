@@ -75,6 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name 
       });
       const {id,...savedUser} = response.data.user;
+      localStorage.setItem('user', JSON.stringify(savedUser));
       setUser(savedUser);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to register');
