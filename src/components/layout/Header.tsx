@@ -56,11 +56,6 @@ const Header: React.FC = () => {
                 My Schedule
               </Link>
             </li>
-            <li>
-              <Link to="/patients" className="text-gray-700 hover:text-clinic-600">
-                Patients
-              </Link>
-            </li>
           </>
         );
       case "staff":
@@ -69,11 +64,6 @@ const Header: React.FC = () => {
             <li>
               <Link to="/appointments" className="text-gray-700 hover:text-clinic-600">
                 Appointments
-              </Link>
-            </li>
-            <li>
-              <Link to="/patients" className="text-gray-700 hover:text-clinic-600">
-                Patients
               </Link>
             </li>
             <li>

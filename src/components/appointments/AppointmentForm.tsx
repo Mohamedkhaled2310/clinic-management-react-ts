@@ -59,6 +59,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onAppointmentCreated 
           // time,
           reason,
         });
+      console.log("Appointment response:", response.data);
       
       toast({
         title: "Appointment Requested",

@@ -15,7 +15,6 @@ const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
-  const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
 
   useEffect(() => {
@@ -34,12 +33,9 @@ const DashboardPage: React.FC = () => {
         setAppointments(appointmentRes.data);
 
         if (user.role !== "patient") {
-          const [billsRes, patientsRes] = await Promise.all([
-            api.get("/bills"),
-            api.get("/patients")
-          ]);
+          const billsRes = await 
+            api.get("/bills");
           setBills(billsRes.data);
-          setPatients(patientsRes.data);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -64,7 +60,6 @@ const DashboardPage: React.FC = () => {
   const cancelledAppointments = appointments.filter(a => a.status === "cancelled").length;
   const missedAppointments = appointments.filter(a => a.status === "missed").length;
   const todayAppointments = appointments.filter(a => a.date === new Date().toISOString().split("T")[0]).length;
-  const totalPatients = patients.length;
   const pendingBills = bills.filter(b => b.status === "unpaid").length;
 
   const dashboardStats = {
@@ -73,7 +68,6 @@ const DashboardPage: React.FC = () => {
     cancelledAppointments,
     missedAppointments,
     pendingBills,
-    totalPatients,
     todayAppointments,
   };
 

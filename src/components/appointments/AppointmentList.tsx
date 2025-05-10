@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Appointment } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import api from "@/services/api";
+
 
 interface AppointmentListProps {
   onSelectAppointment?: (appointment: Appointment) => void;
@@ -15,30 +15,6 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
   onSelectAppointment
 }) => {
   const { user } = useAuth();
-  // const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // useEffect(() => {
-  //   const fetchAppointments = async () => {
-  //     if (!user) return;
-  //     try {
-  //       const endpoint =
-  //         user.role === "patient"
-  //           ? `/appointments/patient`
-  //           : `/appointments/doctor`;
-
-  //       const { data } = await api.get(endpoint);
-  //       setAppointments(data);
-  //       console.log("Appointments:", data);
-  //     } catch (err) {
-  //       console.error("Error fetching appointments:", err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchAppointments();
-  // }, [user]);
 
   const getStatusBadge = (status: Appointment["status"]) => {
     switch (status) {
@@ -96,8 +72,8 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
                 <div>
                   <div className="font-medium mb-1">
                     {user?.role === "patient" 
-                      ? `${appointment.doctorName}`
-                      : `${appointment.patientName}`}
+                      ? `Doctor : ${appointment.doctorName}`
+                      : `Patient : ${appointment.patientName}`}
                   </div>
                   <div className="text-sm text-gray-800 mt-2">
                     <span className="font-medium">Reason:</span> {appointment.reason}

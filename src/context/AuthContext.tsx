@@ -53,15 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    try {
-      // Call logout endpoint to clear the cookie on the server
-      await api.post('/auth/logout');
-    } catch (err) {
-      console.error('Logout error:', err);
-    } finally {
-      // Set user to null regardless of API call success
       setUser(null);
-    }
   };
 
   const register = async (email: string, password: string, name: string) => {
